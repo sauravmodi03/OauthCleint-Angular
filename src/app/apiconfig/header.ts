@@ -1,0 +1,3 @@
+
+
+const credentials = '${client}:${secret}';

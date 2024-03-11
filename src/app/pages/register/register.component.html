@@ -1,0 +1,19 @@
+<div class="signup-container">
+    <form action class="login-form" [formGroup]="signupForm">
+        <h2>Sign Up</h2>
+        <input type="text" name="FirstName" placeholder="First Name"
+            formControlName="firstname" required />
+        <input type="text" name="Last Name" placeholder="Last Name"
+            formControlName="lastname" required />
+        <input type="text" name="Email" placeholder="Email"
+            formControlName="email" required />
+        <input type="password" name="Password" placeholder="Password"
+            formControlName="password"
+            required />
+        <input type="password" name="ConfirmPassword"
+            placeholder="Confirm Password"
+            formControlName="confirmpassword"
+            required />
+        <button type="submit" name="Login" (click)="signup()">Sign Up</button>
+    </form>
+</div>

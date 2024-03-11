@@ -1,0 +1,14 @@
+<div class="login-container">
+    <form action class="login-form" [formGroup]="loginForm">
+        <h2>Login</h2>
+        <input type="text" name="Email" placeholder="Email"
+            formControlName="email" required />
+        <input type="password" name="Password" placeholder="Password"
+            formControlName="password"
+            required />
+        <button type="submit" name="Login" (click)="login()">Login</button>
+        <button type="button" name="Register"
+            (click)="goToRegister()">Register</button>
+
+    </form>
+</div>
