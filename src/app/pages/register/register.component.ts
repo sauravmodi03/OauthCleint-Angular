@@ -46,7 +46,7 @@ export class RegisterComponent implements OnInit {
     this.httpservice.doPost<AuthResponse>(signupapi, jsonobj, options).subscribe((response:AuthResponse) => {
       
       if(response.message === "Success"){
-        alert("Account created successfully. Please check email for account Verification.")
+        alert("Account created successfully. Please check your email for account Verification.");
         this.router.navigate(["/login"]);
       }
       
