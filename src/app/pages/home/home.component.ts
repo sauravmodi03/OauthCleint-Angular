@@ -39,10 +39,11 @@ export class HomeComponent implements OnInit{
     const token = getToken();
     if(token){
       const decoded = jwtDecode(token);
-      if(decoded?.exp && decoded.exp > Date.now()){
+      if(decoded?.exp && decoded.exp < Date.now()/1000){
         this.navigateToLogin();
+      }else{
+        this.getAllTodo();
       }
-      
     }else{
       this.navigateToLogin();
     }
@@ -82,6 +83,10 @@ export class HomeComponent implements OnInit{
     }
 
     this.httpService.doPost<TTodo>(addTodoApi, todo, this.getOptions(getToken()!)).subscribe((res:TTodo) =>{
+      if(res!=null){
+        this.getAllTodo();
+        this.showAddModal=false;
+      }
       console.log(res);
     })
   }
@@ -105,6 +110,7 @@ export class HomeComponent implements OnInit{
     this.httpService.doGet<TTodoResponse>(getAllTodoApi, this.getOptions(token!)).subscribe((res:TTodoResponse) => {
       console.log(res);
       todos = res;
+      this.todoResponse = res;
     })
   }
 
