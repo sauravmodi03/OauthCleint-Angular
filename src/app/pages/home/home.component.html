@@ -1,2 +1,41 @@
 <p>home works!</p>
 <button name="Logout" type="button" (click)="logout()">Logout</button>
+
+<main class="todos-container">
+
+    <h1 style="align-self: center;">Todos</h1>
+    <h2 style="align-self: center;"
+        *ngIf="todoPresent()===false">No
+        Todos to show</h2>
+    <div *ngIf="todoPresent()"
+        class="todo-wrapper">
+        <div *ngFor="let todo of todoResponse.todos" class="todo-card">
+            <input type="checkbox" name="Completed" (change)="toggleTodo()" />
+            <span>
+                <h3>Title</h3>
+                <p>Description</p>
+            </span>
+            <button type="button" name="Edit"
+                (click)="updateTodo(todo)">Edit</button>
+            <button type="button" name="Delete"
+                (click)="deleteTodo(todo.id)">Delete</button>
+        </div>
+
+    </div>
+    <button class="addBtn" name="AddTodo" type="button"
+        (click)="showAddTodoForm()">Add
+        Todo</button>
+</main>
+
+<section class="form-wrapper" *ngIf="showAddModal">
+    <form action="addTodo()" [formGroup]="addTodoForm">
+        <input name="Title" placeholder="Title" type="text"
+            formControlName="title">
+
+        <textarea name="Description" placeholder="Description"
+            formControlName="description"></textarea>
+
+        <button type="submit" (click)="addTodo()">Save</button>
+        <button type="button" (click)="hideAddTodoForm()">Cancel</button>
+    </form>
+</section>

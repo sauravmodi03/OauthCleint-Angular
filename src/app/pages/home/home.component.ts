@@ -1,7 +1,12 @@
+import { HttpHeaders } from '@angular/common/http';
 import { Component, OnInit } from '@angular/core';
-import { Route, Router } from '@angular/router';
+import { FormControl, FormGroup } from '@angular/forms';
+import { Router } from '@angular/router';
 import { jwtDecode } from 'jwt-decode';
-import { getToken, removeToken } from 'src/app/apiconfig/sessionService';
+import { addTodoApi, deleteTodoApi, getAllTodoApi } from 'src/app/apiconfig/endpoint';
+import { getEmail, getToken, invalidateSession } from 'src/app/apiconfig/sessionService';
+import { TTodo, TTodoResponse, TodoResponse } from 'src/app/models/Todo';
+import { HTTPService } from 'src/app/services/http.service';
 
 @Component({
   selector: 'app-home',
@@ -15,9 +20,18 @@ export class HomeComponent implements OnInit{
     console.log('Home Component.');
   }
 
-  constructor(private router:Router){
+  showAddModal : boolean = false;
+
+  constructor(private router:Router, private httpService:HTTPService){
     this.validateSession();
+    var todos : TTodoResponse;
   }
+
+  addTodoForm = new FormGroup({
+    title:new FormControl(""),
+    description:new FormControl("")
+  });
+ 
   
 
   validateSession(){
@@ -36,12 +50,77 @@ export class HomeComponent implements OnInit{
   }
 
   logout(){
-    removeToken();
+    invalidateSession();
     this.navigateToLogin();
   }
 
   navigateToLogin(){
     this.router.navigate(["/login"]);
+  }
+
+  showAddTodoForm(){
+    this.showAddModal = true;
+  }
+
+  hideAddTodoForm(){
+    this.showAddModal = false;
+  }
+
+  toggleTodo(){
+
+  }
+
+  todoResponse = new TodoResponse();
+
+  addTodo(){
+    const todo : TTodo = {
+      id:0,
+      email:getEmail()!,
+      title:this.addTodoForm.value.title!,
+      description:this.addTodoForm.value.description!,
+      completed:false
+    }
+
+    this.httpService.doPost<TTodo>(addTodoApi, todo, this.getOptions(getToken()!)).subscribe((res:TTodo) =>{
+      console.log(res);
+    })
+  }
+
+  updateTodo(todo:TTodo){
+
+  }
+
+  deleteTodo(id:number){
+    this.httpService.doGet(deleteTodoApi(id), this.getOptions(getToken()!)).subscribe((res) => {
+        console.log(res);
+    })
+  }
+
+
+  
+
+  getAllTodo(){
+    var todos : TTodoResponse;
+    const token = getToken();
+    this.httpService.doGet<TTodoResponse>(getAllTodoApi, this.getOptions(token!)).subscribe((res:TTodoResponse) => {
+      console.log(res);
+      todos = res;
+    })
+  }
+
+  getOptions(token:string){
+    const options = {
+      headers : new HttpHeaders({
+        'Content-Type':'application/json',
+        'Access-Control-Allow-Origin':'*',
+        'Authorization':`Bearer ${token}`
+        }),
+    }
+    return options;
+  }
+
+  todoPresent(){
+    return this.todoResponse?.todos?.length > 0;
   }
 
 }

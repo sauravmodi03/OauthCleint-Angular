@@ -4,7 +4,7 @@ import { FormControl, FormGroup } from '@angular/forms';
 import { loginapi } from 'src/app/apiconfig/endpoint';
 import { HTTPService } from 'src/app/services/http.service';
 import { Buffer } from 'buffer';
-import { setToken } from 'src/app/apiconfig/sessionService';
+import { initSession } from 'src/app/apiconfig/sessionService';
 import { Router } from '@angular/router';
 import { AuthResponse } from 'src/app/models/AuthResponse';
 
@@ -46,7 +46,8 @@ export class LoginComponent implements OnInit {
 
     this.httpService.doPost<AuthResponse>(loginapi, {}, options).subscribe((res:AuthResponse) => {
       if(res.message === 'Success' && res.accessToken != ''){
-          setToken(res.accessToken);
+          initSession(this.loginForm.value.email!, res.accessToken);
+          
           setTimeout(()=>{
             this.router.navigate(["/"]);
           },1000);
