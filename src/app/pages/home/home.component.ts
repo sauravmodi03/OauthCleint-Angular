@@ -63,8 +63,9 @@ export class HomeComponent implements OnInit, AfterViewInit{
     if(this.tokenExpired){
       invalidateSession();
       this.navigateToLogin();
-      return;
+      return false;
     }
+    return true;
   }
 
   logout(){
@@ -79,7 +80,8 @@ export class HomeComponent implements OnInit, AfterViewInit{
 
   showAddTodoForm(){
     //this.validateSession();
-    if(this.tokenExpired) this.validateSession();
+    if(!this.validateSession()) return;
+    
     this.showAddModal = true;
   }
 
@@ -95,7 +97,7 @@ export class HomeComponent implements OnInit, AfterViewInit{
 
   addTodo(){
     //this.validateSession();
-    this.validateSession();
+    if(!this.validateSession()) return;
     const todo : TTodo = {
       id:0,
       email:getEmail()!,
@@ -118,8 +120,8 @@ export class HomeComponent implements OnInit, AfterViewInit{
   }
 
   deleteTodo(id:number){
-    this.validateSession();
-    this.httpService.doGet(deleteTodoApi(id), this.getOptions(getToken()!)).subscribe((res) => {
+    if(!this.validateSession()) return;
+      this.httpService.doGet(deleteTodoApi(id), this.getOptions(getToken()!)).subscribe((res) => {
         console.log(res);
         this.loadAllTodo();
     })
@@ -130,7 +132,7 @@ export class HomeComponent implements OnInit, AfterViewInit{
     //var todos : TTodoResponse;
     const token = getToken();
     this.httpService.doGet<TTodoResponse>(getAllTodoApi, this.getOptions(token!)).subscribe((res:TTodoResponse) => {
-      console.log(res);
+      //console.log(res);
       //todos = res;
       this.todoResponse = res;
     })
