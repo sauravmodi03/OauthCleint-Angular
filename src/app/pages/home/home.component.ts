@@ -23,9 +23,13 @@ export class HomeComponent implements OnInit, AfterViewInit{
   showAddModal : boolean = false;
 
   constructor(private router:Router, private httpService:HTTPService){
+    this.loadTokenData();
     this.validateSession();
+    this.loadAllTodo();
     var todos : TTodoResponse;
   }
+
+  tokenExpired = false;
 
   iat:number=Date.now()/1000;
   exp:number=Date.now()/1000;
@@ -35,6 +39,9 @@ export class HomeComponent implements OnInit, AfterViewInit{
   ngAfterViewInit(): void {
     setInterval(()=>{
       this.timer = Math.round(this.exp - Date.now()/1000);
+      if(this.timer <= 0){
+        this.tokenExpired = true;
+      }
     },1000);
   }
 
@@ -43,19 +50,20 @@ export class HomeComponent implements OnInit, AfterViewInit{
     description:new FormControl("")
   });
 
-  validateSession(){
+  loadTokenData(){
     const token = getToken();
     if(token){
       const decoded = jwtDecode(token);
-      if(decoded?.exp && decoded.exp < Date.now()/1000){
-        this.navigateToLogin();
-      }else{
-        this.iat = decoded.iat!;
-        this.exp = decoded.exp!;
-        this.loadAllTodo();
-      }
-    }else{
+      this.iat = decoded.iat!;
+      this.exp = decoded.exp!;
+    }
+  }
+
+  validateSession(){
+    if(this.tokenExpired){
+      invalidateSession();
       this.navigateToLogin();
+      return;
     }
   }
 
@@ -71,6 +79,7 @@ export class HomeComponent implements OnInit, AfterViewInit{
 
   showAddTodoForm(){
     //this.validateSession();
+    if(this.tokenExpired) this.validateSession();
     this.showAddModal = true;
   }
 
@@ -86,7 +95,7 @@ export class HomeComponent implements OnInit, AfterViewInit{
 
   addTodo(){
     //this.validateSession();
-
+    this.validateSession();
     const todo : TTodo = {
       id:0,
       email:getEmail()!,
@@ -109,7 +118,7 @@ export class HomeComponent implements OnInit, AfterViewInit{
   }
 
   deleteTodo(id:number){
-    //this.validateSession();
+    this.validateSession();
     this.httpService.doGet(deleteTodoApi(id), this.getOptions(getToken()!)).subscribe((res) => {
         console.log(res);
         this.loadAllTodo();
@@ -118,11 +127,11 @@ export class HomeComponent implements OnInit, AfterViewInit{
 
 
   loadAllTodo(){
-    var todos : TTodoResponse;
+    //var todos : TTodoResponse;
     const token = getToken();
     this.httpService.doGet<TTodoResponse>(getAllTodoApi, this.getOptions(token!)).subscribe((res:TTodoResponse) => {
       console.log(res);
-      todos = res;
+      //todos = res;
       this.todoResponse = res;
     })
   }
@@ -141,7 +150,6 @@ export class HomeComponent implements OnInit, AfterViewInit{
   todoPresent(){
     return this.todoResponse?.todos?.length > 0;
   }
-
   
 
 }
