@@ -1,8 +1,12 @@
-<p>home works!</p>
-<button name="Logout" type="button" (click)="logout()">Logout</button>
+<button style="right: 5rem;" name="Logout" type="button"
+    (click)="logout()">Logout</button>
 
 <main class="todos-container">
 
+    <h1 style="align-self: center;" *ngIf="timer>0">Time to expire token(Sec):
+        {{timer}}</h1>
+    <h1 style="align-self: center; color: red;" *ngIf="timer<0">Token
+        Expired</h1>
     <h1 style="align-self: center;">Todos</h1>
     <h2 style="align-self: center;"
         *ngIf="todoPresent()===false">No

@@ -1,5 +1,5 @@
 import { HttpHeaders } from '@angular/common/http';
-import { Component, OnInit } from '@angular/core';
+import { AfterViewInit, Component, OnInit } from '@angular/core';
 import { FormControl, FormGroup } from '@angular/forms';
 import { Router } from '@angular/router';
 import { jwtDecode } from 'jwt-decode';
@@ -13,7 +13,7 @@ import { HTTPService } from 'src/app/services/http.service';
   templateUrl: './home.component.html',
   styleUrls: ['./home.component.scss']
 })
-export class HomeComponent implements OnInit{
+export class HomeComponent implements OnInit, AfterViewInit{
   
   
   ngOnInit(): void {
@@ -27,27 +27,36 @@ export class HomeComponent implements OnInit{
     var todos : TTodoResponse;
   }
 
+  iat:number=Date.now()/1000;
+  exp:number=Date.now()/1000;
+
+  timer = Math.round(this.exp - Date.now()/1000);
+
+  ngAfterViewInit(): void {
+    setInterval(()=>{
+      this.timer = Math.round(this.exp - Date.now()/1000);
+    },1000);
+  }
+
   addTodoForm = new FormGroup({
     title:new FormControl(""),
     description:new FormControl("")
   });
- 
-  
 
   validateSession(){
-
     const token = getToken();
     if(token){
       const decoded = jwtDecode(token);
       if(decoded?.exp && decoded.exp < Date.now()/1000){
         this.navigateToLogin();
       }else{
-        this.getAllTodo();
+        this.iat = decoded.iat!;
+        this.exp = decoded.exp!;
+        this.loadAllTodo();
       }
     }else{
       this.navigateToLogin();
     }
-    
   }
 
   logout(){
@@ -56,10 +65,12 @@ export class HomeComponent implements OnInit{
   }
 
   navigateToLogin(){
+    invalidateSession();
     this.router.navigate(["/login"]);
   }
 
   showAddTodoForm(){
+    //this.validateSession();
     this.showAddModal = true;
   }
 
@@ -68,12 +79,14 @@ export class HomeComponent implements OnInit{
   }
 
   toggleTodo(){
-
+    this.validateSession();
   }
 
   todoResponse = new TodoResponse();
 
   addTodo(){
+    //this.validateSession();
+
     const todo : TTodo = {
       id:0,
       email:getEmail()!,
@@ -84,7 +97,7 @@ export class HomeComponent implements OnInit{
 
     this.httpService.doPost<TTodo>(addTodoApi, todo, this.getOptions(getToken()!)).subscribe((res:TTodo) =>{
       if(res!=null){
-        this.getAllTodo();
+        this.loadAllTodo();
         this.showAddModal=false;
       }
       console.log(res);
@@ -92,19 +105,19 @@ export class HomeComponent implements OnInit{
   }
 
   updateTodo(todo:TTodo){
-
+    this.validateSession();
   }
 
   deleteTodo(id:number){
+    //this.validateSession();
     this.httpService.doGet(deleteTodoApi(id), this.getOptions(getToken()!)).subscribe((res) => {
         console.log(res);
+        this.loadAllTodo();
     })
   }
 
 
-  
-
-  getAllTodo(){
+  loadAllTodo(){
     var todos : TTodoResponse;
     const token = getToken();
     this.httpService.doGet<TTodoResponse>(getAllTodoApi, this.getOptions(token!)).subscribe((res:TTodoResponse) => {
@@ -128,5 +141,7 @@ export class HomeComponent implements OnInit{
   todoPresent(){
     return this.todoResponse?.todos?.length > 0;
   }
+
+  
 
 }
