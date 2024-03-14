@@ -51,9 +51,9 @@ export class LoginComponent implements OnInit {
       if(res.message === 'Success' && res.accessToken != ''){
           initSession(this.loginForm.value.email!, res.accessToken);
           
-          // setTimeout(()=>{
+          setTimeout(()=>{
              this.router.navigate(["/"]);
-          // },1000);
+          },1000);
       }
     });
 

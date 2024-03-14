@@ -23,10 +23,37 @@ export class HomeComponent implements OnInit, AfterViewInit{
   showAddModal : boolean = false;
 
   constructor(private router:Router, private httpService:HTTPService){
-    this.loadTokenData();
-    this.validateSession();
-    this.loadAllTodo();
+    if(this.isTokenValid()) {
+      this.loadTokenData()
+      this.loadAllTodo()
+    } else{
+      this.navigateToLogin()
+    }
+    // this.loadTokenData();
+    // this.validateSession();
+    // this.loadAllTodo();
    // var todos : TTodoResponse;
+  }
+
+  validateSessionOnload(){
+    const token = getToken();
+    if(token){
+      const decoded = jwtDecode(token);
+      if(decoded.exp! < Date.now()/1000){
+        invalidateSession();
+        this.navigateToLogin();
+        return false;
+      }
+      this.iat = decoded.iat!;
+      this.exp = decoded.exp!;
+      return true;
+    }
+    return false;
+  }
+
+  isTokenValid(){
+    const token = getToken()
+    return token && jwtDecode(token).exp! > Date.now()/1000;
   }
 
   tokenExpired = getToken() == null;
@@ -57,7 +84,7 @@ export class HomeComponent implements OnInit, AfterViewInit{
       this.iat = decoded.iat!;
       this.exp = decoded.exp!;
     }
-    this.tokenExpired = this.isTokenExpired(this.exp);
+    // this.tokenExpired = this.isTokenExpired(this.exp);
   }
 
   isTokenExpired(exp:number){
@@ -85,9 +112,11 @@ export class HomeComponent implements OnInit, AfterViewInit{
 
   showAddTodoForm(){
     //this.validateSession();
-    if(!this.validateSession()) return;
-    
-    this.showAddModal = true;
+    if(this.isTokenValid()) {
+      this.showAddModal = true;
+    } else{
+      this.navigateToLogin();
+    }
   }
 
   hideAddTodoForm(){
@@ -100,51 +129,62 @@ export class HomeComponent implements OnInit, AfterViewInit{
 
   todoResponse = new TodoResponse();
 
-  addTodo(){
+  async addTodo(){
     //this.validateSession();
-    if(!this.validateSession()) return;
-    const todo : TTodo = {
-      id:0,
-      email:getEmail()!,
-      title:this.addTodoForm.value.title!,
-      description:this.addTodoForm.value.description!,
-      completed:false
-    }
+    if(this.isTokenValid()){
+        const todo : TTodo = {
+          id:0,
+          email:getEmail()!,
+          title:this.addTodoForm.value.title!,
+          description:this.addTodoForm.value.description!,
+          completed:false
+        }
 
-    this.httpService.doPost<TTodo>(addTodoApi, todo, this.getOptions(getToken()!)).subscribe((res:TTodo) =>{
-      if(res!=null){
-        this.loadAllTodo();
-        this.showAddModal=false;
+        this.httpService.doPost<TTodo>(addTodoApi, todo, this.getOptions(getToken()!)).subscribe((res:TTodo) =>{
+          if(res!=null){
+            this.loadAllTodo();
+            this.showAddModal=false;
+          }
+        });
+        setTimeout(()=>{},1000);
+      } else{
+        this.navigateToLogin();
       }
-      console.log(res);
-    })
   }
 
   updateTodo(todo:TTodo){
-    this.validateSession();
+    if(!this.isTokenValid()){
+      this.navigateToLogin();
+    }
   }
 
   deleteTodo(id:number){
-    if(!this.validateSession()) return;
-      this.httpService.doGet(deleteTodoApi(id), this.getOptions(getToken()!)).subscribe((res) => {
-        console.log(res);
-        this.loadAllTodo();
-    })
+    if(this.isTokenValid()) {
+        this.httpService.doGet(deleteTodoApi(id), this.getOptions(getToken()!)).subscribe((res) => {
+          console.log(res);
+          this.loadAllTodo();
+      })
+    } else{
+      this.navigateToLogin();
+    }
   }
 
 
   loadAllTodo(){
     //var todos : TTodoResponse;
-    if(!this.validateSession()) return;
-    const token = getToken();
-    if (token) {
-      this.httpService.doGet<TTodoResponse>(getAllTodoApi, this.getOptions(token!)).subscribe((res:TTodoResponse) => {
-        //console.log(res);
-        //todos = res;
-        this.todoResponse = res;
-      })
+    if(this.isTokenValid()){
+      const token = getToken();
+      if (token) {
+        console.log(getAllTodoApi);
+        this.httpService.doGet<TTodoResponse>(getAllTodoApi, this.getOptions(token!)).subscribe((res:TTodoResponse) => {
+          //console.log(res);
+          //todos = res;
+          this.todoResponse = res;
+        })
+      }
+    }else{
+      this.navigateToLogin();
     }
-    
   }
 
   getOptions(token:string){
