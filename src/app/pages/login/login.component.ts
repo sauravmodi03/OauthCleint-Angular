@@ -4,9 +4,11 @@ import { FormControl, FormGroup } from '@angular/forms';
 import { loginapi } from 'src/app/apiconfig/endpoint';
 import { HTTPService } from 'src/app/services/http.service';
 import { Buffer } from 'buffer';
-import { initSession } from 'src/app/apiconfig/sessionService';
+import { getToken, initSession, invalidateSession } from 'src/app/apiconfig/sessionService';
 import { Router } from '@angular/router';
 import { AuthResponse } from 'src/app/models/AuthResponse';
+import { get } from 'http';
+import { jwtDecode } from 'jwt-decode';
 
 
 @Component({
@@ -23,6 +25,7 @@ export class LoginComponent implements OnInit {
   
   constructor(private httpService : HTTPService, private router:Router){
     console.log("Login Component");
+    this.checkExistingSession();
   }
 
   ngOnInit(): void {
@@ -48,11 +51,27 @@ export class LoginComponent implements OnInit {
       if(res.message === 'Success' && res.accessToken != ''){
           initSession(this.loginForm.value.email!, res.accessToken);
           
-          setTimeout(()=>{
-            this.router.navigate(["/"]);
-          },1000);
+          // setTimeout(()=>{
+             this.router.navigate(["/"]);
+          // },1000);
       }
     });
+
+  }
+
+  checkExistingSession(){
+    const token = getToken();
+    if(token){
+      const decoded = jwtDecode(token);
+      const exp = decoded.exp;
+      if(exp! > Date.now()/1000){
+        this.router.navigate(["/"]);
+      }
+      else{
+        invalidateSession();
+      }
+    }
+
 
   }
 

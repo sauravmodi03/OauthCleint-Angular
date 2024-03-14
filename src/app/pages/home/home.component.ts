@@ -26,10 +26,10 @@ export class HomeComponent implements OnInit, AfterViewInit{
     this.loadTokenData();
     this.validateSession();
     this.loadAllTodo();
-    var todos : TTodoResponse;
+   // var todos : TTodoResponse;
   }
 
-  tokenExpired = false;
+  tokenExpired = getToken() == null;
 
   iat:number=Date.now()/1000;
   exp:number=Date.now()/1000;
@@ -57,6 +57,11 @@ export class HomeComponent implements OnInit, AfterViewInit{
       this.iat = decoded.iat!;
       this.exp = decoded.exp!;
     }
+    this.tokenExpired = this.isTokenExpired(this.exp);
+  }
+
+  isTokenExpired(exp:number){
+    return exp < Date.now()/1000;
   }
 
   validateSession(){
@@ -130,12 +135,16 @@ export class HomeComponent implements OnInit, AfterViewInit{
 
   loadAllTodo(){
     //var todos : TTodoResponse;
+    if(!this.validateSession()) return;
     const token = getToken();
-    this.httpService.doGet<TTodoResponse>(getAllTodoApi, this.getOptions(token!)).subscribe((res:TTodoResponse) => {
-      //console.log(res);
-      //todos = res;
-      this.todoResponse = res;
-    })
+    if (token) {
+      this.httpService.doGet<TTodoResponse>(getAllTodoApi, this.getOptions(token!)).subscribe((res:TTodoResponse) => {
+        //console.log(res);
+        //todos = res;
+        this.todoResponse = res;
+      })
+    }
+    
   }
 
   getOptions(token:string){

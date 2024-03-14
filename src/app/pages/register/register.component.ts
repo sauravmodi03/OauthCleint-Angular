@@ -34,16 +34,24 @@ export class RegisterComponent implements OnInit {
   signup(){
     const formData = this.signupForm.value;
 
-    const userDto = new User(formData.firstname!, formData.lastname!, formData.email!, formData.password!);
+    // const userDto = new User(formData.firstname!, formData.lastname!, formData.email!, formData.password!);
 
     const options = {
       headers : new HttpHeaders({
         'Content-Type':'application/json',
         'Access-Control-Allow-Origin':'*'
         }),
+        
     }
-    const jsonobj = JSON.stringify(userDto);
-    this.httpservice.doPost<AuthResponse>(signupapi, jsonobj, options).subscribe((response:AuthResponse) => {
+
+    const jsonUser = {
+      "firstName" : formData.firstname,
+      "lastName" : formData.lastname, 
+      "email" : formData.email, 
+      "password" : formData.password 
+    }
+    // const jsonobj = JSON.stringify(userDto);
+    this.httpservice.doPost<AuthResponse>(signupapi, jsonUser, options).subscribe((response:AuthResponse) => {
       
       if(response.message === "Success"){
         alert("Account created successfully. Please check your email for account Verification.");
