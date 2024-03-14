@@ -50,10 +50,9 @@ export class LoginComponent implements OnInit {
     this.httpService.doPost<AuthResponse>(loginapi, {}, options).subscribe((res:AuthResponse) => {
       if(res.message === 'Success' && res.accessToken != ''){
           initSession(this.loginForm.value.email!, res.accessToken);
-          
           setTimeout(()=>{
              this.router.navigate(["/"]);
-          },1000);
+          },2000);
       }
     });
 

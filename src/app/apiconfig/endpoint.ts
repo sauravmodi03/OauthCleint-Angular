@@ -18,7 +18,7 @@ const getAllTodos = "/api/Resource/get/todos";
 const addTodoApi = `${resourceHost}${addTodo}`;
 const updateTodoApi = `${resourceHost}${updateTodo}`;
 const deleteTodoApi =  (id:number) => `${resourceHost}${deleteTodo}?id=${id}`;
-const getAllTodoApi = `${resourceHost}${getAllTodos}?email=${getEmail()}`;
+const getAllTodoApi = `${resourceHost}${getAllTodos}?email=`;
 
 
 export {loginapi, signupapi, addTodoApi, updateTodoApi, deleteTodoApi, getAllTodoApi};

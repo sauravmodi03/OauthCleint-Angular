@@ -29,26 +29,6 @@ export class HomeComponent implements OnInit, AfterViewInit{
     } else{
       this.navigateToLogin()
     }
-    // this.loadTokenData();
-    // this.validateSession();
-    // this.loadAllTodo();
-   // var todos : TTodoResponse;
-  }
-
-  validateSessionOnload(){
-    const token = getToken();
-    if(token){
-      const decoded = jwtDecode(token);
-      if(decoded.exp! < Date.now()/1000){
-        invalidateSession();
-        this.navigateToLogin();
-        return false;
-      }
-      this.iat = decoded.iat!;
-      this.exp = decoded.exp!;
-      return true;
-    }
-    return false;
   }
 
   isTokenValid(){
@@ -60,6 +40,7 @@ export class HomeComponent implements OnInit, AfterViewInit{
 
   iat:number=Date.now()/1000;
   exp:number=Date.now()/1000;
+  userEmail="";
 
   timer = Math.round(this.exp - Date.now()/1000);
 
@@ -83,8 +64,8 @@ export class HomeComponent implements OnInit, AfterViewInit{
       const decoded = jwtDecode(token);
       this.iat = decoded.iat!;
       this.exp = decoded.exp!;
+      this.userEmail = String(decoded.aud!);
     }
-    // this.tokenExpired = this.isTokenExpired(this.exp);
   }
 
   isTokenExpired(exp:number){
@@ -171,13 +152,10 @@ export class HomeComponent implements OnInit, AfterViewInit{
 
 
   loadAllTodo(){
-    //var todos : TTodoResponse;
     if(this.isTokenValid()){
       const token = getToken();
       if (token) {
-        console.log(getAllTodoApi);
-        this.httpService.doGet<TTodoResponse>(getAllTodoApi, this.getOptions(token!)).subscribe((res:TTodoResponse) => {
-          //console.log(res);
+        this.httpService.doGet<TTodoResponse>(getAllTodoApi+this.userEmail, this.getOptions(token!)).subscribe((res:TTodoResponse) => {
           //todos = res;
           this.todoResponse = res;
         })
