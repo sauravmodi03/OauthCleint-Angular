@@ -174,7 +174,7 @@ export class HomeComponent implements OnInit, AfterViewInit{
         }),
     }
     return options;
-  }
+  } 
 
   todoPresent(){
     return this.todoResponse?.todos?.length > 0;
