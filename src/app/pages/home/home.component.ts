@@ -171,7 +171,7 @@ export class HomeComponent implements OnInit, AfterViewInit{
         'Content-Type':'application/json',
         'Access-Control-Allow-Origin':'*',
         'Authorization':`Bearer ${token}`
-        }),
+        }), 
     }
     return options;
   }  
