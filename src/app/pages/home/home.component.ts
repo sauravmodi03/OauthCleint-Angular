@@ -163,7 +163,7 @@ export class HomeComponent implements OnInit, AfterViewInit{
     }else{
       this.navigateToLogin();
     }
-  }
+  } 
 
   getOptions(token:string){
     const options = {
